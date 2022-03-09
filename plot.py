@@ -28,12 +28,11 @@ def plot(df):
     fig.savefig(f"{df.attrs['filename']}.hist.png")
 
 def compare(dfs):
-    colnames = []
-
     # Rename each 'freq' column to have a unique name based on the
     # original file's filename
+    colnames = []
     for i, df in enumerate(dfs):
-        newcolname = os.path.basename(df.attrs['filename'])
+        newcolname = pathlib.Path(df.attrs['filename']).stem
         colnames.append(newcolname)
         dfs[i] = df.rename({'freq': newcolname}, axis=1)
 
@@ -67,8 +66,7 @@ def compare(dfs):
     )
     fig.tight_layout()
 
-    input_fns = [pathlib.Path(df.attrs['filename']).stem for df in dfs]
-    fn = f"comparison-{'-'.join(input_fns)}-timeseries.png"
+    fn = f"comparison-{'-'.join(colnames)}-timeseries.png"
     fig.savefig(fn)
     print(f"Wrote {fn}")
 
