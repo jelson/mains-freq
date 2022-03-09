@@ -33,17 +33,18 @@ print(myQ("*IDN?"))
 myW('OUTP OFF')
 myW('OUTP:CH2 OFF')
 myW('COUN ON')
-myW('COUN:COUP AC')
+myW('COUN:COUP DC')
 print(myQ('COUN:COUP?'))
 myW('COUN:SENS LOW')
 print(myQ('COUN:SENS?'))
-myW('COUN:TLEV 71')
+myW('COUN:TLEV 50')
 print(myQ('COUN:TLEV?'))
 myW('COUN:HFRS ON')
 print(myQ('COUN:HFRS?'))
 print(myQ('COUN:FREQ?'))
 
-with open("data.txt", "a") as ofh:
+fname = 'dave_' + str(int(time.time())) + '.csv'
+with open(fname, "a") as ofh:
     last_freq = 'boop'
     while True:
         freq = myQ('COUN:FREQ?')
