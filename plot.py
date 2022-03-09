@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import sys
-import pandas as pd
 import matplotlib.pyplot as plt
+import os
+import pandas as pd
+import pathlib
+import sys
 
 def plot(df):
     # plot timeseries
@@ -25,6 +27,51 @@ def plot(df):
     )
     fig.savefig(f"{df.attrs['filename']}.hist.png")
 
+def compare(dfs):
+    colnames = []
+
+    # Rename each 'freq' column to have a unique name based on the
+    # original file's filename
+    for i, df in enumerate(dfs):
+        newcolname = os.path.basename(df.attrs['filename'])
+        colnames.append(newcolname)
+        dfs[i] = df.rename({'freq': newcolname}, axis=1)
+
+    # Merge all the dataframes
+    merged = dfs[0]
+    for df in dfs[1:]:
+        merged = pd.merge_asof(
+            left=merged,
+            right=df,
+            on='time',
+            direction='nearest',
+            tolerance=pd.Timedelta('5s'),
+        )
+
+    # Drop the non-matching rows and apply a rolling average
+    merged = merged.dropna()
+    for col in colnames:
+        merged[col] = merged[col].rolling(30, center=True).mean()
+
+    # Plot the portions that match
+    fig, ax = plt.subplots(figsize=(20, 10))
+    merged.plot(
+        ax=ax,
+        x='time',
+        y=colnames,
+        grid=True,
+    )
+    ax.set(
+        xlabel="Time",
+        ylabel="Frequency (hz)",
+    )
+    fig.tight_layout()
+
+    input_fns = [pathlib.Path(df.attrs['filename']).stem for df in dfs]
+    fn = f"comparison-{'-'.join(input_fns)}-timeseries.png"
+    fig.savefig(fn)
+    print(f"Wrote {fn}")
+
 def read(filename):
     df = pd.read_csv(filename, header=None)
     df = df.rename({0: 'time', 1: 'freq'}, axis=1)
@@ -32,16 +79,20 @@ def read(filename):
     df['time'] = df['time'].dt.tz_convert('US/Pacific')
     df.attrs['filename'] = filename
     return df
-    
+
 def main():
-    if len(sys.argv) != 2:
-        print("provide input filename as argument")
+    if len(sys.argv) == 1:
+        print("provide input filename as argument, or more than one to compare")
         sys.exit(1)
 
-    df = read(sys.argv[1])
-    print(df)
-    plot(df)
+    elif len(sys.argv) == 2:
+        df = read(sys.argv[1])
+        print(df)
+        plot(df)
+
+    else:
+        dfs = [read(fn) for fn in sys.argv[1:]]
+        compare(dfs)
 
 if __name__ == "__main__":
     main()
-    
