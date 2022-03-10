@@ -80,7 +80,7 @@ if True:
                 ofh.write(out)
                 last_freq = freq
 
-                if ((count % 180) == 0):
+                if ((count % 1800) == 0):
                     s = 'EXT' if flip else 'INT'
                     myW(f'SYST:CLKSRC {s}')
                     print(f'flip {s}')
