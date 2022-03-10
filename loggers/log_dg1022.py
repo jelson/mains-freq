@@ -47,18 +47,45 @@ if False:
 
 if True:
     myW('COUN ON')
+    myW('COUN:COUP DC')
+    myW('COUN:SENS LOW')
+    myW('COUN:TLEV 50')
+    myW('COUN:HFRS ON')
+    myW('DISP:ON')
+    print(myQ('COUN:COUP?'))
+    print(myQ('COUN:SENS?'))
+    print(myQ('COUN:TLEV?'))
+    print(myQ('COUN:HFRS?'))
 
-fname = 'dave_' + str(int(time.time())) + '.csv'
+while False:
+    print('bboop')
+    myW(f'SYST:CLKSRC EXT')
+    time.sleep(5)
+    print('bbeep')
+    myW(f'SYST:CLKSRC INT')
+    time.sleep(5)
 
-with open(fname, "a") as ofh:
-    count = 0
-    last_freq = 'boop'
-    while True:
-        freq = myQ('COUN:FREQ?')
-        if freq != last_freq:
-            out = f'{time.time()},{freq}\n'
-            sys.stdout.write(out)
-            ofh.write(out)
-            last_freq = freq
+if True:
+    fname = 'dave_' + str(int(time.time())) + '.csv'
+    with open(fname, "a") as ofh:
+        count = 0
+        last_freq = 'boop'
+        flip = False
+        while True:
 
+            freq = myQ('COUN:FREQ?')
+            if freq != last_freq:
+                out = f'{time.time()},{freq}\n'
+                sys.stdout.write(out)
+                ofh.write(out)
+                last_freq = freq
+
+                if ((count % 180) == 0):
+                    s = 'EXT' if flip else 'INT'
+                    myW(f'SYST:CLKSRC {s}')
+                    print(f'flip {s}')
+                    print(myQ('SYST:ERR?'))
+                    flip = not flip
+
+                count += 1
 
