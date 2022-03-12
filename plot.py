@@ -65,8 +65,26 @@ def compare(dfs):
         ylabel="Frequency (hz)",
     )
     fig.tight_layout()
-
     fn = f"comparison-{'-'.join(colnames)}-timeseries.png"
+    fig.savefig(fn)
+    print(f"Wrote {fn}")
+
+    # compute differences
+    diffs = merged[colnames[0]] - merged[colnames[1]]
+    diffs = diffs.dropna()
+    # Plot the portions that match
+    fig, ax = plt.subplots(figsize=(20, 10))
+    diffs.plot(
+        ax=ax,
+        x='time',
+        grid=True,
+    )
+    ax.set(
+        xlabel="Time",
+        ylabel=f"Frequency Difference Between {colnames[0]} and {colnames[1]}",
+    )
+    fig.tight_layout()
+    fn = f"freqdiff-{'-'.join(colnames)}-timeseries.png"
     fig.savefig(fn)
     print(f"Wrote {fn}")
 
